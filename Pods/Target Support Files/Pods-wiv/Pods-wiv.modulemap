@@ -1,0 +1,6 @@
+framework module Pods_wiv {
+  umbrella header "Pods-wiv-umbrella.h"
+
+  export *
+  module * { export * }
+}
