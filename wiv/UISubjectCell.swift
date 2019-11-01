@@ -40,6 +40,7 @@ class UISubjectCell: UITableViewCell {
         //TODO: 최대 알림 등록 개수를 초과하는지 검사
         
         
+        
         //로딩 화면 불러오기
         
         Statics.showLoading(at: self.context!, animated: true, completion: {
