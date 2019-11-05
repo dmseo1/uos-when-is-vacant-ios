@@ -119,8 +119,7 @@ class MainViewController: UIViewController {
         
         
         
-        
-        self.navigationController?.navigationBar.backgroundColor = #colorLiteral(red: 0.03921568627, green: 0.3019607843, blue: 0.6078431373, alpha: 1)
+        self.navigationItem.title = " "
         watchingSubjectList.backgroundColor = UIColor.black.withAlphaComponent(0)
         watchingSubjectList.dataSource = self
         watchingSubjectList.delegate = self

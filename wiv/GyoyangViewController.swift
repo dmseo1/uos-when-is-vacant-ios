@@ -11,10 +11,12 @@ import BEMCheckBox
 
 class GyoyangViewController: UIViewController, UITextFieldDelegate {
     
+    var filterHeight = 0
+    var isFilterHidden = false
+    
     var searchResult : [SubjectElement] = []
     @IBOutlet weak var searchList: UITableView!
-    
-    
+    @IBOutlet weak var gyoyangFilter: UIStackView!
     @IBOutlet weak var txtSearch: UITextField!
     @IBOutlet weak var chkVacantSubject: BEMCheckBox!
     @IBOutlet weak var lblVacantSubject: UILabel!
@@ -50,6 +52,8 @@ class GyoyangViewController: UIViewController, UITextFieldDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        filterHeight = Int(gyoyangFilter.frame.height)
+        print("filterHeight: \(filterHeight)")
     }
     
     
@@ -80,6 +84,19 @@ class GyoyangViewController: UIViewController, UITextFieldDelegate {
         txtSearch.resignFirstResponder()
         return true
     }
+    
+    @IBAction func onClickHideFilter(_ sender: UIButton) {
+        print("동작됨")
+        switch(isFilterHidden) {
+        case true:
+            gyoyangFilter.frame.size.height = CGFloat(filterHeight)
+            isFilterHidden = false
+        case false:
+            gyoyangFilter.frame.size.height = CGFloat(0)
+            isFilterHidden = true
+        }
+    }
+    
     
     @IBAction func onClickBtnSearch(_ sender: UIButton) {
         //소프트키보드 내리기
