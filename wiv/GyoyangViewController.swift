@@ -11,17 +11,16 @@ import BEMCheckBox
 
 class GyoyangViewController: UIViewController, UITextFieldDelegate {
     
-    var filterHeight = 0
     var isFilterHidden = false
-    
+
     var searchResult : [SubjectElement] = []
+    @IBOutlet weak var screenStack: UIStackView!
     @IBOutlet weak var searchList: UITableView!
-    @IBOutlet weak var gyoyangFilter: UIStackView!
     @IBOutlet weak var txtSearch: UITextField!
     @IBOutlet weak var chkVacantSubject: BEMCheckBox!
     @IBOutlet weak var lblVacantSubject: UILabel!
-    
     @IBOutlet weak var btnFilter: UIButton!
+    @IBOutlet weak var btnHideFilter: UIButton!
     
     @IBOutlet weak var lblSearchStatus: UILabel!
     
@@ -52,8 +51,6 @@ class GyoyangViewController: UIViewController, UITextFieldDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        filterHeight = Int(gyoyangFilter.frame.height)
-        print("filterHeight: \(filterHeight)")
     }
     
     
@@ -86,13 +83,14 @@ class GyoyangViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func onClickHideFilter(_ sender: UIButton) {
-        print("동작됨")
         switch(isFilterHidden) {
         case true:
-            gyoyangFilter.frame.size.height = CGFloat(filterHeight)
+            screenStack.arrangedSubviews[0].isHidden = false
+            btnHideFilter.setTitle("▲ 필터 숨기기", for: .normal)
             isFilterHidden = false
         case false:
-            gyoyangFilter.frame.size.height = CGFloat(0)
+            screenStack.arrangedSubviews[0].isHidden = true
+            btnHideFilter.setTitle("▼ 필터 보이기", for: .normal)
             isFilterHidden = true
         }
     }
@@ -132,9 +130,11 @@ class GyoyangViewController: UIViewController, UITextFieldDelegate {
                     let subjectList = Statics.getArrayDictionaryFromJSON(jsonString: result, tag: "subject_search_result")
                     self.searchResult.removeAll()
                     for i : Int in 0..<subjectList.count {
+                        
                         //TODO: 필터 내용을 여기에 추가한다
                         var subject = SubjectElement()
                         subject.fill(from: subjectList[i])
+                        let sn = subject.subjectNm
                         
                         if onlyVacant {
                             let cnt = Int(subject.tlsnCount) ?? 0
@@ -147,9 +147,12 @@ class GyoyangViewController: UIViewController, UITextFieldDelegate {
                         if subject.dayNightNm == "계약" || subject.dayNightNm == "" {
                             continue
                         }
+                        
+                        if sn.contains("한국어") { continue }
+                        
                         if exEx {
-                            if subject.subjectDiv2 == "학문기초" && (subject.subjectNm.contains("및실험") ||
-                                subject.subjectNm.contains("및실습") || subject.subjectNm.contains("창의주제탐구세미나")) {
+                            if subject.subjectDiv2 == "학문기초" && (sn.contains("및실험") ||
+                                sn.contains("및실습") || sn.contains("창의주제탐구세미나")) {
                                 continue
                             }
                         }
@@ -173,8 +176,7 @@ class GyoyangViewController: UIViewController, UITextFieldDelegate {
                         }
                         
                         if exFo {
-                            let sn = subject.subjectNm
-                            if subject.subjectDiv2 == "외국어" && (sn == "중국어" || sn == "일본어" || sn == "스페인어" || sn == "베트남어" || sn == "러시아어" || sn == "독일어" || sn == "불어" || sn == "라틴어") {
+                            if subject.subjectDiv2 == "외국어" && (sn.contains("중국어") || sn.contains("일본어") || sn.contains("스페인어") || sn.contains("베트남어") || sn.contains("러시아어") || sn.contains("독일어") || sn.contains("불어") || sn.contains("라틴어")) {
                                 continue
                             }
                         }

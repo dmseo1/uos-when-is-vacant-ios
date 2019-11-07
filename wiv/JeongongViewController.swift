@@ -12,6 +12,8 @@ import BEMCheckBox
 
 class JeongongViewController: UIViewController, UITextFieldDelegate {
     
+    var isFilterHidden = false
+    
     var selectedDeptIdx = 0
     var selectedSubDeptIdx = 0
     
@@ -23,6 +25,7 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
     var deptPicker : ActionSheetStringPicker?
     var subDeptPicker : ActionSheetStringPicker?
     
+    @IBOutlet weak var screenStack: UIStackView!
     
     @IBOutlet weak var btnDept: UIButton!
     @IBOutlet weak var btnSubDept: UIButton!
@@ -36,6 +39,9 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var btnFilter: UIButton!
     
     @IBOutlet weak var txtSearch: UITextField!
+    
+    @IBOutlet weak var btnHideFilter: UIButton!
+    
     
     @IBOutlet weak var btnSearch: UIButton!
     @IBOutlet weak var searchList: UITableView!
@@ -162,6 +168,20 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
         //소프트 키보드 내리기
         txtSearch.resignFirstResponder()
+    }
+    
+    
+    @IBAction func onClickBtnHideFilter(_ sender: UIButton) {
+        switch(isFilterHidden) {
+        case true:
+            screenStack.arrangedSubviews[0].isHidden = false
+            btnHideFilter.setTitle("▲ 필터 숨기기", for: .normal)
+            isFilterHidden = false
+        case false:
+            screenStack.arrangedSubviews[0].isHidden = true
+            btnHideFilter.setTitle("▼ 필터 보이기", for: .normal)
+            isFilterHidden = true
+        }
     }
     
     @IBAction func onClickBtnSearch(_ sender: UIButton) {
