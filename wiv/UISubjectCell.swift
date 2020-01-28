@@ -37,8 +37,11 @@ class UISubjectCell: UITableViewCell {
             }
         }
         
-        //TODO: 최대 알림 등록 개수를 초과하는지 검사
-        
+        //최대 알림 등록 개수를 초과하는지 검사
+        if(subscribingSubjectNames.count >= Int(UserDefaults.standard.string(forKey: "num_max_watching_subjects") ?? "3") ?? 3) {
+            Statics.makeAlertMessage(at: self.context!, title: "알림", message: "최대 알림 등록 개수를 초과하였습니다.")
+            return
+        }
         
         
         //로딩 화면 불러오기

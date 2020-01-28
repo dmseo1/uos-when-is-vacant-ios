@@ -12,6 +12,7 @@ import UIKit
 class Statics {
     static var basicURL = "http://52.78.173.4/wiv/"
     static let internetConnectionFailedDialog = UIAlertController(title: "알림", message: "인터넷 연결이 불안정하여 어플리케이션을 실행할 수 없습니다. 어플리케이션 종료 후 다시 실행해주세요.", preferredStyle: .alert)
+    static var maxWatchingSubjects = 3
     
     //로딩 화면 보여주기
     static func showLoading(at context : UIViewController, animated : Bool, completion : (() -> Void)?) {

@@ -72,6 +72,7 @@ class MainViewController: UIViewController {
                 Statics.basicURL = appSettings.string(forKey: "basic_url")!
                 DispatchQueue.main.async {
                     self.lblWatchingSubjects.text = "알림 과목(\(self.watchingSubjectNames.count)/\(appSettings.string(forKey: "num_max_watching_subjects") ?? "3"))"
+                    
                 }
                 
                 

@@ -77,7 +77,8 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
                 }
                 
                 //픽커 조정
-                DispatchQueue.main.sync {
+                DispatchQueue.main.async {
+                    print("여기 실행됨")
                     self.deptPicker = ActionSheetStringPicker(title: "대학 선택", rows: self.depts, initialSelection: self.selectedDeptIdx, doneBlock: { picker, indexes, values in
                         
                         //대표 레이블을 조정하고, 픽커 내용을 변경한다
@@ -96,7 +97,7 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
                         self.subDeptPicker = ActionSheetStringPicker(title: "학부/과 선택", rows: newSubDeptArray, initialSelection: self.selectedSubDeptIdx, doneBlock : { picker, indexes, values in
                             self.lblSelectedSubDept.text = values as? String
                             return
-                        }, cancel: { ActionStringCancelBlock in return}, origin: self.btnSubDept)
+                        }, cancel: { ActionStringCancelBlock in return}, origin: self.btnDept)
                         
                         
                         self.selectedDeptIdx = indexes
@@ -140,10 +141,12 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
     
     
     @IBAction func onClickBtnDept(_ sender: UIButton) {
+        print("enabled")
         deptPicker?.show()
     }
     
     @IBAction func onClickBtnSubDept(_ sender: UIButton) {
+        print("enabled")
         subDeptPicker?.show()
     }
     
