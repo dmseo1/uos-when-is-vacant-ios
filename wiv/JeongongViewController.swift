@@ -10,15 +10,17 @@ import UIKit
 import ActionSheetPicker_3_0
 import BEMCheckBox
 
-class JeongongViewController: UIViewController, UITextFieldDelegate {
+class JeongongViewController: UIViewController, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
+    
     
     var isFilterHidden = false
     
-    var selectedDeptIdx = 0
-    var selectedSubDeptIdx = 0
     
-    var depts : [String ] = []
+    var depts :	[String] = []
+    var subDeptsOfSelectedDept : [String] = []
+
     var subDepts : [SubDeptElement] = []
+
     var searchResult : [SubjectElement] = []
     
     
@@ -27,13 +29,15 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var screenStack: UIStackView!
     
-    @IBOutlet weak var btnDept: UIButton!
-    @IBOutlet weak var btnSubDept: UIButton!
-    
-    @IBOutlet weak var lblSelectedDept: UILabel!
-    @IBOutlet weak var lblSelectedSubDept: UILabel!
+  
     @IBOutlet weak var hiddenableView: UIStackView!
     
+    
+    @IBOutlet weak var btnPckDept: UITextField!
+    @IBOutlet weak var btnPckSubDept: UITextField!
+    
+    
+
     
     @IBOutlet weak var chkVacantSubject: BEMCheckBox!
     @IBOutlet weak var btnFilter: UIButton!
@@ -42,14 +46,35 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var btnHideFilter: UIButton!
     
+ 
     
     @IBOutlet weak var btnSearch: UIButton!
     @IBOutlet weak var searchList: UITableView!
     @IBOutlet weak var lblSearchStatus: UILabel!
     
+    var selectedDept = ""
+    var selectedSubDept = ""
+   
+    
+    
+    
+    required init?(coder: NSCoder) {
+        print("implemented!!!")
+    
+        super.init(coder: coder)
+     
+        //fatalError("init(coder:) has not been implemented")
+       
+    }
+    
+   
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        btnPckDept.tintColor = .clear
+        btnPckSubDept.tintColor = .clear
+       
         
         btnFilter.layoutMargins = UIEdgeInsets(top: 0.0, left: 10.0, bottom: 0.0, right: 0.0)
         
@@ -69,64 +94,50 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
             let fetchSubDepts = HttpConnector()
             fetchSubDepts.taskCompleted = { result in
                 let appInfo = Statics.getArrayDictionaryFromJSON(jsonString: result, tag: "dept_info")
+
                 for i : Int in 0..<appInfo.count {
-                    if !self.depts.contains(appInfo[i]["dept_name"]!) {
-                        self.depts.append(appInfo[i]["dept_name"]!)
+                    //학부/과
+                    if(!self.depts.contains(appInfo[i]["dept_name"] ?? "")) {
+                        self.depts.append(appInfo[i]["dept_name"] ?? "")
                     }
-                    self.subDepts.append(SubDeptElement(withNo: Int(appInfo[i]["no"]!)!, deptCode: appInfo[i]["dept"]!, deptName: appInfo[i]["dept_name"]!, subDeptCode: appInfo[i]["sub_dept"]!, subDeptName: appInfo[i]["sub_dept_name"]!))
+                  
+                    
+                    let subDept = SubDeptElement(
+                        withNo: Int(appInfo[i]["no"] ?? "0") ?? 0,
+                        deptCode: appInfo[i]["dept"] ?? "",
+                        deptName: appInfo[i]["dept_name"] ?? "",
+                        subDeptCode: appInfo[i]["sub_dept"] ?? "",
+                        subDeptName: appInfo[i]["sub_dept_name"] ?? ""
+                    )
+                    self.subDepts.append(subDept)
                 }
                 
-                //픽커 조정
+            
                 DispatchQueue.main.async {
-                    print("여기 실행됨")
-                    self.deptPicker = ActionSheetStringPicker(title: "대학 선택", rows: self.depts, initialSelection: self.selectedDeptIdx, doneBlock: { picker, indexes, values in
-                        
-                        //대표 레이블을 조정하고, 픽커 내용을 변경한다
-                        self.lblSelectedDept.text = values as? String
-                        var newSubDeptArray : [String] = []
-                        for i : Int in 0..<self.subDepts.count {
-                            if values as? String == self.subDepts[i].deptName {
-                                newSubDeptArray.append(self.subDepts[i].subDeptName)
-                            }
-                        }
-                        
-                        //새로 선택된 대학 기준으로 학부/과 픽커 조정
-                        //인덱스를 가장 처음으로 돌린 후, 대표 레이블을 조정하고, 픽커 내용을 변경한다
-                        self.selectedSubDeptIdx = 0
-                        self.lblSelectedSubDept.text = newSubDeptArray[self.selectedSubDeptIdx]
-                        self.subDeptPicker = ActionSheetStringPicker(title: "학부/과 선택", rows: newSubDeptArray, initialSelection: self.selectedSubDeptIdx, doneBlock : { picker, indexes, values in
-                            self.lblSelectedSubDept.text = values as? String
-                            return
-                        }, cancel: { ActionStringCancelBlock in return}, origin: self.btnDept)
-                        
-                        
-                        self.selectedDeptIdx = indexes
-                        return
-                    }, cancel: { ActionStringCancelBlock in
-                        
-                        return}, origin: self.btnDept)
                     
-                    //학부/과 픽커 최초 초기화가 필요하다
-                    var newSubDeptArray : [String] = []
+                    //픽커 버튼 초기 세팅
+                    self.btnPckDept.text = self.depts[0]
+                    self.selectedDept = self.depts[0]
+                    
                     for i : Int in 0..<self.subDepts.count {
-                        if self.lblSelectedDept.text == self.subDepts[i].deptName {
-                            newSubDeptArray.append(self.subDepts[i].subDeptName)
+                        if self.subDepts[i].deptName == self.selectedDept {
+                            self.subDeptsOfSelectedDept.append(self.subDepts[i].subDeptName)
                         }
                     }
-                    self.selectedSubDeptIdx = 0
-                    self.lblSelectedSubDept.text = newSubDeptArray[self.selectedSubDeptIdx]
-                    self.subDeptPicker = ActionSheetStringPicker(title: "학부/과 선택", rows: newSubDeptArray, initialSelection: self.selectedSubDeptIdx, doneBlock : { picker, indexes, values in
-                        self.lblSelectedSubDept.text = values as? String
-                        return
-                    }, cancel: { ActionStringCancelBlock in return}, origin: self.btnSubDept)
+                    self.btnPckSubDept.text = self.subDeptsOfSelectedDept[0]
+                    self.selectedSubDept = self.subDeptsOfSelectedDept[0]
+                    
+                    
+                    //픽커 생성 및 초기화
+                    self.createPickerView(tagNo : 1)
+                    self.createPickerView(tagNo : 2)
+                    self.dismissPickerView(tagNo : 1)
+                    self.dismissPickerView(tagNo : 2)
+                    loadingView.dismiss(animated: false, completion: nil)
                 }
             }
             fetchSubDepts.getData(url: "fetch_dept_info.php", parameters: "secCode=onlythiswivappcancallthisfetchdeptinfophpfile!")
-            
-            self.dismiss(animated: true, completion: nil)
         })
-        
-        
         
         let tappingOutsideTxtField = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         self.view.addGestureRecognizer(tappingOutsideTxtField)
@@ -134,6 +145,7 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
         searchList.backgroundColor = UIColor.black.withAlphaComponent(0)
         searchList.dataSource = self
         searchList.delegate = self
+        
         
         
         // Do any additional setup after loading the view.
@@ -191,6 +203,8 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
         //소프트키보드 내리기
         txtSearch.resignFirstResponder()
         
+        //TODO: 픽커 감추기
+        
         //조회 상태 레이블 감추기
         lblSearchStatus.isHidden = true
         
@@ -206,11 +220,13 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
             let divJp = !onlyVacant || storage.bool(forKey: "jeongong_div_jp_enabled")
             let exHs = onlyVacant && storage.bool(forKey: "jeongong_ex_hs_enabled")
             
-            //검색 대학, 학부/과의 코드를 설정
+            //검색 대학, 학부/과의 코드를 탐색(검색에 쓰기 위함)
             var searchingDeptCode = ""
             var searchingSubDeptCode = ""
+            print("셀렉티드: \(self.selectedSubDept)")
             for i : Int in 0..<self.subDepts.count {
-                if self.subDepts[i].subDeptName == self.lblSelectedSubDept.text {
+                print("네임: \(self.subDepts[i].subDeptName)")
+                if self.subDepts[i].subDeptName == self.selectedSubDept {
                     searchingDeptCode = self.subDepts[i].deptCode
                     searchingSubDeptCode = self.subDepts[i].subDeptCode
                     break
@@ -260,7 +276,7 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
                     }
                     
                     
-                    DispatchQueue.main.sync {
+                    DispatchQueue.main.async {
                         self.searchList.reloadData()
                         if self.searchResult.count == 0 {
                             self.lblSearchStatus.text = "조건에 맞는 과목이 없습니다."
@@ -274,23 +290,103 @@ class JeongongViewController: UIViewController, UITextFieldDelegate {
                     }
                 }
                 
-                DispatchQueue.main.sync {
+                DispatchQueue.main.async {
                     fetchSearchResult.getData(url: url, parameters: "secCode=onlythiswivappcancallthisdeptsearchphpfile!&gj=jeongong&dept=\(searchingDeptCode)&subDept=\(searchingSubDeptCode)&subjectNm=\(self.txtSearch.text!)")
+                    
+                    print("CODE:\(searchingDeptCode), \(searchingSubDeptCode)")
                 }
                 
             }
             fetchSearchPos.getData(url: "fetch_search_pos.php", parameters: "secCode=onlythiswivappcancallthisfetchsearchposphpfile!")
-            
-            
         })
-        
-        
-        
-        
-        
+    }
+    
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        switch(pickerView.tag) {
+        case 1:
+            return depts.count
+        case 2:
+            return subDeptsOfSelectedDept.count
+        default:
+            return 0
+        }
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        switch(pickerView.tag) {
+        case 1:
+            return depts[row]
+        case 2:
+            return subDeptsOfSelectedDept[row]
+        default:
+            return ""
+        }
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        switch(pickerView.tag) {
+        case 1:
+            selectedDept = depts[row]
+            btnPckDept.text = selectedDept
+            subDeptsOfSelectedDept.removeAll()
+            for i : Int in 0..<subDepts.count {
+                if(subDepts[i].deptName == selectedDept) {
+                    subDeptsOfSelectedDept.append(subDepts[i].subDeptName)
+                }
+            }
+            btnPckSubDept.text = subDeptsOfSelectedDept[0]
+            selectedSubDept = subDeptsOfSelectedDept[0]
+        case 2:
+            selectedSubDept = subDeptsOfSelectedDept[row]
+            btnPckSubDept.text = selectedSubDept
+        default:
+            print("This could not be happened!")
+            
+        }
     }
     
     
+    func createPickerView(tagNo : Int) {
+        let pickerView = UIPickerView()
+        pickerView.tag = tagNo
+        pickerView.delegate = self
+        switch(tagNo) {
+        case 1:
+            btnPckDept.inputView = pickerView
+        case 2:
+            btnPckSubDept.inputView = pickerView
+        default:
+            print("It could not be happened!")
+        }
+    }
+    
+    func dismissPickerView(tagNo : Int) {
+        let toolBar = UIToolbar()
+        toolBar.sizeToFit()
+        
+        let button = UIBarButtonItem(title: "선택", style: .plain, target: self, action: #selector(self.action))
+        toolBar.setItems([button], animated: true)
+        toolBar.isUserInteractionEnabled = true
+        switch(tagNo) {
+        case 1:
+              btnPckDept.inputAccessoryView = toolBar
+        case 2:
+              btnPckSubDept.inputAccessoryView = toolBar
+        default:
+            print("It could not be happened!")
+            	
+        }
+      
+    }
+    
+    @objc func action() {
+       view.endEditing(true)
+    }
+
     
     
     /*
