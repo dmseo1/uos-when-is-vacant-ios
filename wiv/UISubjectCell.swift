@@ -26,8 +26,8 @@ class UISubjectCell: UITableViewCell {
         //등록에 필요한 정보 로드
         let subscribingSubjectCode = "\(self.subjectInfo!.subjectNo)-\(self.subjectInfo!.classDiv)"
         let subscribingSubjectName = "\(self.subjectInfo!.subjectNm)"
-        var subscribingSubjectCodes = UserDefaults.standard.array(forKey:"subscribing_subject_codes")! as! [String]
-        var subscribingSubjectNames = UserDefaults.standard.array(forKey:"subscribing_subject_names")! as! [String]
+        var subscribingSubjectCodes = (UserDefaults.standard.array(forKey:"subscribing_subject_codes") ?? []) as [String]
+        var subscribingSubjectNames = (UserDefaults.standard.array(forKey:"subscribing_subject_names") ?? []) as [String]
         
         //중복 등록이 아닌지 검사
         for i : Int in 0..<subscribingSubjectCodes.count {
@@ -50,10 +50,9 @@ class UISubjectCell: UITableViewCell {
             //구독설정
             
             Messaging.messaging().subscribe(toTopic: "\(subscribingSubjectCode)-ios") { error in
-                
                 //에러 처리
                 if error != nil {
-                    print("에러가 났습니다")
+                    Statics.debugPrint("Enroll", "과목 알림 설정 오류")
                     //로딩 창 제거
                     self.context!.dismiss(animated: true, completion: nil)
                     //알림 메시지 띄우기
@@ -78,16 +77,7 @@ class UISubjectCell: UITableViewCell {
                 
             }
         })
-        
-        
-        
-        
-        
-        
     }
-    
-    
-    
 }
 
 extension GyoyangViewController : UITableViewDataSource {

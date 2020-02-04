@@ -34,7 +34,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
             UNUserNotificationCenter.current().requestAuthorization(
                 options: authOptions,
-                completionHandler: {_, _ in print("1번")})
+                completionHandler: {_, _ in Statics.debugPrint("CallLoc", "1번")})
         } else {
             let settings: UIUserNotificationSettings =
                 UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil)
@@ -55,13 +55,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // With swizzling disabled you must let Messaging know about the message, for Analytics
         // Messaging.messaging().appDidReceiveMessage(userInfo)
         // Print message ID.
-        print("2번")
+        Statics.debugPrint("CallLoc", "2번")
         if let messageID = userInfo[gcmMessageIDKey] {
-            print("Message ID: \(messageID)")
+            Statics.debugPrint("Messaage ID", "\(messageID)")
         }
         
         // Print full message.
-        print(userInfo)
+       // print(userInfo)
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
@@ -72,9 +72,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // With swizzling disabled you must let Messaging know about the message, for Analytics
         // Messaging.messaging().appDidReceiveMessage(userInfo)
         // Print message ID.
-        print("3번")
+        Statics.debugPrint("CallLoc", "3번")
         if let messageID = userInfo[gcmMessageIDKey] {
-            print("Message ID: \(messageID)")
+            Statics.debugPrint("Messaage ID", "\(messageID)")
         }
         
         // Print full message.
@@ -84,17 +84,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     // [END receive_message]
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        print("4번")
-        print("Unable to register for remote notifications: \(error.localizedDescription)")
+        Statics.debugPrint("CallLoc", "4번")
+       // print("Unable to register for remote notifications: \(error.localizedDescription)")
     }
     
     // This function is added here only for debugging purposes, and can be removed if swizzling is enabled.
     // If swizzling is disabled then this function must be implemented so that the APNs token can be paired to
     // the FCM registration token.
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        print("5번")
-        print("APNs token retrieved: \(deviceToken)")
-        
+        Statics.debugPrint("CallLoc", "5번")
+        Statics.debugPrint("APNs token retrived: ", "\(deviceToken)")
+      
         // With swizzling disabled you must set the APNs token here.
         // Messaging.messaging().apnsToken = deviceToken
     }
@@ -130,13 +130,13 @@ extension AppDelegate : UNUserNotificationCenterDelegate {
         // With swizzling disabled you must let Messaging know about the message, for Analytics
         // Messaging.messaging().appDidReceiveMessage(userInfo)
         // Print message ID.
-        print("6번")
+        Statics.debugPrint("CallLoc", "6번")
         if let messageID = userInfo[gcmMessageIDKey] {
-            print("Message ID: \(messageID)")
+            Statics.debugPrint("Message ID", "\(messageID)")
         }
         
         // Print full message.
-        print(userInfo)
+       // print(userInfo)
         
         // Change this to your preferred presentation option
         completionHandler([.badge, .alert, .sound])
@@ -147,13 +147,13 @@ extension AppDelegate : UNUserNotificationCenterDelegate {
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         let userInfo = response.notification.request.content.userInfo
         // Print message ID.
-        print("7번")
+        Statics.debugPrint("CallLoc", "7번")
         if let messageID = userInfo[gcmMessageIDKey] {
-            print("Message ID: \(messageID)")
+            Statics.debugPrint("Message ID", "\(messageID)")
         }
         
         // Print full message.
-        print(userInfo)
+       // print(userInfo)
         
         completionHandler()
     }
@@ -163,9 +163,10 @@ extension AppDelegate : UNUserNotificationCenterDelegate {
 extension AppDelegate : MessagingDelegate {
     // [START refresh_token]
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String) {
-        print("Firebase registration token: \(fcmToken)")
-        print("8번")
+        Statics.debugPrint("Firebase registration token", "\(fcmToken)")
+        Statics.debugPrint("CallLoc", "8번")
         let dataDict:[String: String] = ["token": fcmToken]
+        UserDefaults.standard.set(fcmToken, forKey: "token")
         NotificationCenter.default.post(name: Notification.Name("FCMToken"), object: nil, userInfo: dataDict)
         // TODO: If necessary send token to application server.
         // Note: This callback is fired at each app startup and whenever a new token is generated.
@@ -175,8 +176,9 @@ extension AppDelegate : MessagingDelegate {
     // Receive data messages on iOS 10+ directly from FCM (bypassing APNs) when the app is in the foreground.
     // To enable direct data messages, you can set Messaging.messaging().shouldEstablishDirectChannel to true.
     func messaging(_ messaging: Messaging, didReceive remoteMessage: MessagingRemoteMessage) {
-        print("9번")
-        print("Received data message: \(remoteMessage.appData)")
+        Statics.debugPrint("CallLoc", "9번")
+        Statics.debugPrint("Received data message", "\(remoteMessage.appData)")
+    
     }
     // [END ios_10_data_message]
 }

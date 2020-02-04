@@ -18,18 +18,18 @@ class HttpConnector {
             request.httpBody = parameters.data(using: .utf8)
             let task = URLSession.shared.dataTask(with: request, completionHandler: { data, response, error in
                 guard let data = data, error == nil else {
-                    print("error = \(error!)")
+                    //print("error = \(error!)")
                     self.taskFailed?()
                     return
                 }
                 
                 if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print("response = \(response!)")
+                    //print("statusCode should be 200, but is \(httpStatus.statusCode)")
+                    //print("response = \(response!)")
                     self.taskFailed?()
                 }
                 if let result = String(data: data, encoding: .utf8) {
-                    print("fetchedData: \(result)")
+                    Statics.debugPrint("fetchedData", result)
                     self.taskCompleted?(result)
                 }
             })
@@ -48,19 +48,19 @@ class HttpConnectorOthers {
             request.httpBody = parameters.data(using: .utf8)
             let task = URLSession.shared.dataTask(with: request, completionHandler: { data, response, error in
                 guard let data = data, error == nil else {
-                    print("error = \(error!)")
+                    //print("error = \(error!)")
                     self.taskFailed?()
                     return
                 }
                 
                 if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print("response = \(response!)")
+                    //print("statusCode should be 200, but is \(httpStatus.statusCode)")
+                    //print("response = \(response!)")
                     self.taskFailed?()
                     
                 }
                 if let result = String(data: data, encoding: .utf8) {
-                    print("fetchedData: \(result)")
+                    Statics.debugPrint("fetchedData", result)
                     self.taskCompleted?(result)
                 }
             })

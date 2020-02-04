@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import ActionSheetPicker_3_0
 import BEMCheckBox
 
 class JeongongViewController: UIViewController, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
@@ -24,8 +23,6 @@ class JeongongViewController: UIViewController, UITextFieldDelegate, UIPickerVie
     var searchResult : [SubjectElement] = []
     
     
-    var deptPicker : ActionSheetStringPicker?
-    var subDeptPicker : ActionSheetStringPicker?
     
     @IBOutlet weak var screenStack: UIStackView!
     
@@ -59,7 +56,6 @@ class JeongongViewController: UIViewController, UITextFieldDelegate, UIPickerVie
     
     
     required init?(coder: NSCoder) {
-        print("implemented!!!")
     
         super.init(coder: coder)
      
@@ -152,15 +148,6 @@ class JeongongViewController: UIViewController, UITextFieldDelegate, UIPickerVie
     }
     
     
-    @IBAction func onClickBtnDept(_ sender: UIButton) {
-        print("enabled")
-        deptPicker?.show()
-    }
-    
-    @IBAction func onClickBtnSubDept(_ sender: UIButton) {
-        print("enabled")
-        subDeptPicker?.show()
-    }
     
     
     @IBAction func OnChangedChkVacantSubject(_ sender: BEMCheckBox) {
@@ -204,6 +191,9 @@ class JeongongViewController: UIViewController, UITextFieldDelegate, UIPickerVie
         txtSearch.resignFirstResponder()
         
         //TODO: 픽커 감추기
+        btnPckDept.resignFirstResponder()
+        btnPckSubDept.resignFirstResponder()
+        
         
         //조회 상태 레이블 감추기
         lblSearchStatus.isHidden = true
@@ -223,9 +213,9 @@ class JeongongViewController: UIViewController, UITextFieldDelegate, UIPickerVie
             //검색 대학, 학부/과의 코드를 탐색(검색에 쓰기 위함)
             var searchingDeptCode = ""
             var searchingSubDeptCode = ""
-            print("셀렉티드: \(self.selectedSubDept)")
+            
             for i : Int in 0..<self.subDepts.count {
-                print("네임: \(self.subDepts[i].subDeptName)")
+               
                 if self.subDepts[i].subDeptName == self.selectedSubDept {
                     searchingDeptCode = self.subDepts[i].deptCode
                     searchingSubDeptCode = self.subDepts[i].subDeptCode
@@ -293,11 +283,11 @@ class JeongongViewController: UIViewController, UITextFieldDelegate, UIPickerVie
                 DispatchQueue.main.async {
                     fetchSearchResult.getData(url: url, parameters: "secCode=onlythiswivappcancallthisdeptsearchphpfile!&gj=jeongong&dept=\(searchingDeptCode)&subDept=\(searchingSubDeptCode)&subjectNm=\(self.txtSearch.text!)")
                     
-                    print("CODE:\(searchingDeptCode), \(searchingSubDeptCode)")
+                   
                 }
                 
             }
-            fetchSearchPos.getData(url: "fetch_search_pos.php", parameters: "secCode=onlythiswivappcancallthisfetchsearchposphpfile!")
+            fetchSearchPos.getData(url: "fetch_search_pos.php", parameters: "secCode=onlythiswivappcancallthisfetchsearchposphpfile!&token=\(UserDefaults.standard.string(forKey: "token") ?? "FIRST")&os=ios")
         })
     }
     
@@ -344,7 +334,7 @@ class JeongongViewController: UIViewController, UITextFieldDelegate, UIPickerVie
             selectedSubDept = subDeptsOfSelectedDept[row]
             btnPckSubDept.text = selectedSubDept
         default:
-            print("This could not be happened!")
+            Statics.debugPrint("JeongongViewController", "This could not be happened!")
             
         }
     }

@@ -1,5 +1,4 @@
 PODS:
-  - ActionSheetPicker-3.0 (2.3.0)
   - BEMCheckBox (1.4.1)
   - Firebase/Analytics (6.10.0):
     - Firebase/Core
@@ -83,7 +82,6 @@ PODS:
   - Protobuf (3.10.0)
 
 DEPENDENCIES:
-  - ActionSheetPicker-3.0
   - BEMCheckBox
   - Firebase/Analytics
   - Firebase/Messaging
@@ -91,7 +89,6 @@ DEPENDENCIES:
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
-    - ActionSheetPicker-3.0
     - BEMCheckBox
     - Firebase
     - FirebaseAnalytics
@@ -110,7 +107,6 @@ SPEC REPOS:
     - Protobuf
 
 SPEC CHECKSUMS:
-  ActionSheetPicker-3.0: eef157d75e151f255c5333d26656c7fbfe905a51
   BEMCheckBox: 5ba6e37ade3d3657b36caecc35c8b75c6c2b1a4e
   Firebase: 5e6b7b12bf9adb90986688edc06b156c37e109cd
   FirebaseAnalytics: 0e3ecff2c5d86070f7d4325e21f1edabfbd558dc
@@ -128,6 +124,6 @@ SPEC CHECKSUMS:
   nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
   Protobuf: a4dc852ad69c027ca2166ed287b856697814375b
 
-PODFILE CHECKSUM: 480188651cbded3efd9671e81d625b908c2d9677
+PODFILE CHECKSUM: 5f881cce68be8000f2745546015e4ab6f86915cb
 
 COCOAPODS: 1.8.4

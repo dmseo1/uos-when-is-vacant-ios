@@ -26,19 +26,19 @@ class MainViewController: UIViewController {
     
     @IBOutlet weak var imgWatching: UIImageView!
     @IBOutlet weak var lblWatchingSubjects: UILabel!
+    @IBOutlet weak var btnDeleteAllWatchingSubjects: UIButton!
+    
     
     @IBOutlet weak var watchingSubjectList: UITableView!
     @IBOutlet weak var btnSearchSubject: UIButton!
     
+    @IBOutlet weak var lblNoWatchingSubject: UILabel!
     
-    @IBAction func onClickBtnSearchSubject(_ sender: UIButton) {
-        
-        if let uvc = self.storyboard?.instantiateViewController(withIdentifier: "Enroll") {
-            uvc.modalTransitionStyle = UIModalTransitionStyle.coverVertical
-            self.navigationController?.pushViewController(uvc, animated: true)
-            
-        }
+    var deleteWatchingSubjectsLock : NSLock {
+        return NSLock()
     }
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,16 +49,16 @@ class MainViewController: UIViewController {
         
         //공지 기본값 처리
         lblNoticeTitle.text = UserDefaults.standard.string(forKey: "app_notice_title") ?? "등록된 공지가 없습니다"
-        let gesture = UITapGestureRecognizer(target: self, action: #selector(lblNoticeTitleClicked(_:)))
-        imgNotice.addGestureRecognizer(gesture)
-        lblNoticeTitle.addGestureRecognizer(gesture)
+        let lblNoticeTitleGesture = UITapGestureRecognizer(target: self, action: #selector(lblNoticeTitleClicked(_:)))
+        imgNotice.addGestureRecognizer(lblNoticeTitleGesture)
+        lblNoticeTitle.addGestureRecognizer(lblNoticeTitleGesture)
         
+        //설정 버튼 누름 처리
+        let btnSettingsGesture = UITapGestureRecognizer(target: self, action:
+            #selector(btnSettingsClicked(_:)))
+        btnSettings.addGestureRecognizer(btnSettingsGesture)
         
         Statics.showLoading(at: self, animated: true, completion: {
-            
-            
-            
-            
             
             let myHttpConnector = HttpConnector()
             myHttpConnector.taskCompleted = { result in
@@ -74,7 +74,6 @@ class MainViewController: UIViewController {
                     self.lblWatchingSubjects.text = "알림 과목(\(self.watchingSubjectNames.count)/\(appSettings.string(forKey: "num_max_watching_subjects") ?? "3"))"
                     
                 }
-                
                 
                 //필터, 알림 설정 과목 저장변수 초기화
                 if !self.storage.bool(forKey: "is_not_first_executed") {
@@ -112,20 +111,14 @@ class MainViewController: UIViewController {
                     })
                 }
             }
-            myHttpConnector.getData(url: "fetch_app_info.php", parameters: "secCode=onlythiswivappcancallthisfetchappvariablesphpfile!")
+            myHttpConnector.getData(url: "fetch_app_info.php", parameters: "secCode=onlythiswivappcancallthisfetchappvariablesphpfile!&token=\(UserDefaults.standard.string(forKey:"token") ?? "FIRST")")
         })
-        
-        
-        
-        
         
         
         self.navigationItem.title = " "
         watchingSubjectList.backgroundColor = UIColor.black.withAlphaComponent(0)
         watchingSubjectList.dataSource = self
         watchingSubjectList.delegate = self
-        
-        
         
         
         // Do any additional setup after loading the view.
@@ -137,6 +130,7 @@ class MainViewController: UIViewController {
         self.navigationController?.navigationBar.isHidden = true
         
         //공지사항 가져오기
+       
         let fetchNotice = HttpConnector()
         fetchNotice.taskCompleted = { result in
             DispatchQueue.main.async {
@@ -157,16 +151,97 @@ class MainViewController: UIViewController {
         }
         fetchNotice.taskFailed = {}
         fetchNotice.getData(url: "fetch_notice.php", parameters: "secCode=onlythiswivappcancallthisfetchnoticephpfile!")
-
+       
+        
+        
         //왓칭 과목 현황 업데이트
-      
         watchingSubjectCodes = (UserDefaults.standard.array(forKey: "subscribing_subject_codes") ?? []) as [String]
         watchingSubjectNames = (UserDefaults.standard.array(forKey: "subscribing_subject_names") ?? []) as [String]
         watchingSubjectList.reloadData()
         
+        //알림 과목이 0개일 때 알림 메시지 띄우기
+        if watchingSubjectCodes.count == 0 {
+            lblNoWatchingSubject.isHidden = false
+        } else {
+            lblNoWatchingSubject.isHidden = true
+        }
+        
         //왓칭 과목 현황 레이블(과목수) 업데이트
         lblWatchingSubjects.text = "알림 과목(\(watchingSubjectNames.count)/\(UserDefaults.standard.string(forKey: "num_max_watching_subjects") ?? "3"))"
         
+    }
+    
+    //과목 조회 버튼 클릭시
+    @IBAction func onClickBtnSearchSubject(_ sender: UIButton) {
+        if let uvc = self.storyboard?.instantiateViewController(withIdentifier: "Enroll") {
+            uvc.modalTransitionStyle = UIModalTransitionStyle.coverVertical
+            self.navigationController?.pushViewController(uvc, animated: true)
+        }
+    }
+    
+    //모두 해제 버튼 클릭시
+    @IBAction func onClickBtnDeleteAllWatchingSubjects(_ sender: Any) {
+        let arrToDel = (UserDefaults.standard.array(forKey: "subscribing_subject_names") ?? [])
+        
+        //해제할 과목이 없는 경우
+        if arrToDel.count == 0 {
+            Statics.makeAlertMessage(at: self, title: "알림", message: "알림 해제할 과목이 없습니다.")
+            return
+        }
+        
+        //해제할 과목이 하나 이상인 경우
+        Statics.showLoading(at: self, animated: false, completion: {
+            self.unsubscribeAll(curPos : 0, maxPos : arrToDel.count - 1)
+        })
+    }
+    
+    func unsubscribeAll(curPos :Int, maxPos : Int) {
+        //현재 저장소 상태 호출
+        let curSubscribingSubjectNames = (UserDefaults.standard.array(forKey: "subscribing_subject_names") ?? []) as [String]
+        let curSubscribingSubjectCodes = (UserDefaults.standard.array(forKey: "subscribing_subject_codes") ?? []) as [String]
+        
+        Messaging.messaging().unsubscribe(fromTopic: "\(curSubscribingSubjectCodes[0])-ios") { error in
+            //에러 처리
+            if error != nil {
+                //로딩 창 제거
+                self.dismiss(animated: true, completion: nil)
+                //알림 메시지 띄우기
+                Statics.makeAlertMessage(at: self, title: "알림", message: "과목 알림 설정 해제 중 오류가 발생하였습니다. 안정적인 네트워크 환경 하에서 이용해주세요.")
+                return
+            }
+            
+            
+            if curPos < maxPos {
+                //저장소에 현재 상태 저장
+                self.deleteWatchingSubjectsLock.lock()
+                print("unsubscribed: \(curSubscribingSubjectCodes[0])")
+                UserDefaults.standard.set(Array(curSubscribingSubjectCodes[1..<curSubscribingSubjectCodes.count]), forKey: "subscribing_subject_codes")
+                UserDefaults.standard.set(Array(curSubscribingSubjectNames[1..<curSubscribingSubjectCodes.count]), forKey: "subscribing_subject_names")
+                self.deleteWatchingSubjectsLock.unlock()
+                	
+                //다음 것 삭제
+                self.unsubscribeAll(curPos : curPos + 1, maxPos : maxPos)
+            } else { //마지막 과목 삭제시
+                //저장소에 빈 배열 저장
+                UserDefaults.standard.set([], forKey: "subscribing_subject_codes")
+                UserDefaults.standard.set([], forKey: "subscribing_subject_names")
+                //로딩 창 제거
+                self.dismiss(animated: true, completion: nil)
+                
+                //알림 메시지 띄우기
+                Statics.makeAlertMessage(at: self, title: "알림", message: "모든 과목 알림이 해제되었습니다.")
+                
+                //삭제 후 리스트 새로고침
+                DispatchQueue.main.async {
+                    self.viewWillAppear(true)
+                }
+            }
+            
+        } //end unsubscribe
+    }
+    
+    @objc func btnSettingsClicked(_ sender : UITapGestureRecognizer) {
+        Statics.makeAlertMessage(at: self, title: "알림", message: "준비중입니다!")
     }
     
     @objc func lblNoticeTitleClicked(_ sender : UITapGestureRecognizer) {
@@ -188,5 +263,3 @@ class MainViewController: UIViewController {
      */
     
 }
-
-

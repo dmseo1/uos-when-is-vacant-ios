@@ -204,7 +204,7 @@ class GyoyangViewController: UIViewController, UITextFieldDelegate {
                 }
                 
             }
-            fetchSearchPos.getData(url: "fetch_search_pos.php", parameters: "secCode=onlythiswivappcancallthisfetchsearchposphpfile!")
+            fetchSearchPos.getData(url: "fetch_search_pos.php", parameters: "secCode=onlythiswivappcancallthisfetchsearchposphpfile!&token=\(UserDefaults.standard.string(forKey: "token") ?? "FIRST")&os=ios")
             
             
         })
